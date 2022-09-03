@@ -29,7 +29,6 @@ jobs:
       - run: npm config set registry http://registry.npmjs.org
       - run: npm install -g npm@latest
       - run: npm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
-      - run: npm whoami
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
