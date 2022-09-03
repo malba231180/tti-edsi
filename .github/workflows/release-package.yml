@@ -26,9 +26,9 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12
-      - run: npm config set registry https://npm.pkg.github.com
+      - run: npm config set registry https://registry.npmjs.org
       - run: npm install -g npm@latest
-      - run: npm config set always-auth true
+      - run: npm login --scope=@npmjs --registry=https://registry.npmjs.org
       - run: npm publish
       - run: npm logout --scope=@malba231180
         env:
