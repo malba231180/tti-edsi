@@ -1,0 +1,22 @@
+{
+    "name": "malba231180/tti-edsi",
+    "description": "Core functionality for CTS on TTIBase (EDSI)",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "MA",
+            "email": "malba.231180@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+    },
+  "require-dev": {
+    "wp-coding-standards/wpcs": "^1.0"
+  },
+    "autoload": {
+        "psr-4": {
+            "malba231180\\": "src/"
+        }
+    }
+}
