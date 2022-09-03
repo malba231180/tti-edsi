@@ -20,5 +20,4 @@ If ($condition) {
 TRY {
 } Catch (Exception $e) {
 }
-
-$r = MATCH ($x) {};
+?>

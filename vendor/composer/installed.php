@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '07bb43130db5604908d15cfa7d10bfd7e87f5d72',
+    'reference' => 'e79b0363c1a73fe394bdb6796dae943e6c02a412',
     'name' => 'malba231180/tti-edsi',
   ),
   'versions' => 
@@ -18,16 +18,16 @@
       'aliases' => 
       array (
       ),
-      'reference' => '07bb43130db5604908d15cfa7d10bfd7e87f5d72',
+      'reference' => 'e79b0363c1a73fe394bdb6796dae943e6c02a412',
     ),
     'squizlabs/php_codesniffer' => 
     array (
-      'pretty_version' => '3.7.1',
-      'version' => '3.7.1.0',
+      'pretty_version' => '3.4.0',
+      'version' => '3.4.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1359e176e9307e906dc3d890bcc9603ff6d90619',
+      'reference' => '379deb987e26c7cd103a7b387aea178baec96e48',
     ),
     'wp-coding-standards/wpcs' => 
     array (

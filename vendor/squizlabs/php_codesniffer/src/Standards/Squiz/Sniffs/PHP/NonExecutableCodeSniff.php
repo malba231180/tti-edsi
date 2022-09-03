@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\PHP;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Util\Tokens;
 
 class NonExecutableCodeSniff implements Sniff
@@ -105,7 +105,6 @@ class NonExecutableCodeSniff implements Sniff
                         T_CASE,
                         T_DEFAULT,
                         T_CLOSE_CURLY_BRACKET,
-                        T_ENDSWITCH,
                     ],
                     ($end + 1)
                 );
@@ -211,16 +210,12 @@ class NonExecutableCodeSniff implements Sniff
                 break;
             }
 
-            if (isset($tokens[$start]['parenthesis_closer']) === true
-                && $tokens[$start]['code'] === T_OPEN_PARENTHESIS
-            ) {
+            if ($tokens[$start]['code'] === T_OPEN_PARENTHESIS) {
                 $start = $tokens[$start]['parenthesis_closer'];
                 continue;
             }
 
-            if (isset($tokens[$start]['bracket_closer']) === true
-                && $tokens[$start]['code'] === T_OPEN_CURLY_BRACKET
-            ) {
+            if ($tokens[$start]['code'] === T_OPEN_CURLY_BRACKET) {
                 $start = $tokens[$start]['bracket_closer'];
                 continue;
             }

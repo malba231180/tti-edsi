@@ -13,12 +13,13 @@
 
 namespace PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Util\Tokens;
 
 class AssignmentInConditionSniff implements Sniff
 {
+
 
     /**
      * Assignment tokens to trigger on.
@@ -60,7 +61,6 @@ class AssignmentInConditionSniff implements Sniff
             T_SWITCH,
             T_CASE,
             T_WHILE,
-            T_MATCH,
         ];
 
     }//end register()

@@ -47,11 +47,6 @@ class GitModified extends ExactMatch
 
         foreach ($output as $path) {
             $path = Util\Common::realpath($path);
-
-            if ($path === false) {
-                continue;
-            }
-
             do {
                 $modified[$path] = true;
                 $path            = dirname($path);

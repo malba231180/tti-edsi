@@ -6,7 +6,7 @@
         "phpcs",
         "standards"
     ],
-    "homepage": "https://github.com/squizlabs/PHP_CodeSniffer",
+    "homepage": "http://www.squizlabs.com/php-codesniffer",
     "license": "BSD-3-Clause",
     "authors": [
         {

@@ -14,7 +14,6 @@ use PHP_CodeSniffer\Sniffs\Sniff;
 use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Config;
 use PHP_CodeSniffer\Exceptions\RuntimeException;
-use PHP_CodeSniffer\Util\Common;
 
 class CodeAnalyzerSniff implements Sniff
 {
@@ -40,7 +39,6 @@ class CodeAnalyzerSniff implements Sniff
      *                                               the token was found.
      *
      * @return int
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException If ZendCodeAnalyzer could not be run.
      */
     public function process(File $phpcsFile, $stackPtr)
     {
@@ -54,15 +52,15 @@ class CodeAnalyzerSniff implements Sniff
         // In the command, 2>&1 is important because the code analyzer sends its
         // findings to stderr. $output normally contains only stdout, so using 2>&1
         // will pipe even stderr to stdout.
-        $cmd = Common::escapeshellcmd($analyzerPath).' '.escapeshellarg($fileName).' 2>&1';
+        $cmd = escapeshellcmd($analyzerPath).' '.escapeshellarg($fileName).' 2>&1';
 
         // There is the possibility to pass "--ide" as an option to the analyzer.
         // This would result in an output format which would be easier to parse.
-        // The problem here is that no cleartext error messages are returned; only
+        // The problem here is that no cleartext error messages are returnwd; only
         // error-code-labels. So for a start we go for cleartext output.
         $exitCode = exec($cmd, $output, $retval);
 
-        // Variable $exitCode is the last line of $output if no error occurs, on
+        // Variable $exitCode is the last line of $output if no error occures, on
         // error it is numeric. Try to handle various error conditions and
         // provide useful error reporting.
         if (is_numeric($exitCode) === true && $exitCode > 0) {

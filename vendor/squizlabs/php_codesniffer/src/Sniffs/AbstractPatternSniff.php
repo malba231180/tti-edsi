@@ -153,7 +153,7 @@ abstract class AbstractPatternSniff implements Sniff
      *
      * @return int The position in the pattern that this test should register
      *             as the listener.
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException If we could not determine a token to listen for.
+     * @throws RuntimeException If we could not determine a token to listen for.
      */
     private function getListenerTokenPos($pattern)
     {
@@ -195,7 +195,7 @@ abstract class AbstractPatternSniff implements Sniff
 
         $tokens = $phpcsFile->getTokens();
 
-        if (in_array($tokens[$stackPtr]['code'], $this->supplementaryTokens, true) === true) {
+        if (in_array($tokens[$stackPtr]['code'], $this->supplementaryTokens) === true) {
             $this->processSupplementary($phpcsFile, $stackPtr);
         }
 
@@ -260,9 +260,10 @@ abstract class AbstractPatternSniff implements Sniff
         $errors      = [];
         $found       = '';
 
-        $ignoreTokens = [T_WHITESPACE => T_WHITESPACE];
+        $ignoreTokens = [T_WHITESPACE];
         if ($this->ignoreComments === true) {
-            $ignoreTokens += Tokens::$commentTokens;
+            $ignoreTokens
+                = array_merge($ignoreTokens, Tokens::$commentTokens);
         }
 
         $origStackPtr = $stackPtr;

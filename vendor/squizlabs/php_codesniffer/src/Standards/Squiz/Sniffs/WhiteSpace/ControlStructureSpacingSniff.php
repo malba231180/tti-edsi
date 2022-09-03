@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Util\Tokens;
 
 class ControlStructureSpacingSniff implements Sniff
@@ -46,7 +46,6 @@ class ControlStructureSpacingSniff implements Sniff
             T_TRY,
             T_CATCH,
             T_FINALLY,
-            T_MATCH,
         ];
 
     }//end register()
@@ -145,7 +144,6 @@ class ControlStructureSpacingSniff implements Sniff
             T_CLASS                => true,
             T_INTERFACE            => true,
             T_TRAIT                => true,
-            T_ENUM                 => true,
             T_DOC_COMMENT_OPEN_TAG => true,
         ];
 
@@ -233,16 +231,6 @@ class ControlStructureSpacingSniff implements Sniff
                 $phpcsFile->recordMetric($stackPtr, 'Blank lines at end of control structure', 0);
             }//end if
         }//end if
-
-        if ($tokens[$stackPtr]['code'] === T_MATCH) {
-            // Move the scope closer to the semicolon/comma.
-            $next = $phpcsFile->findNext(Tokens::$emptyTokens, ($scopeCloser + 1), null, true);
-            if ($next !== false
-                && ($tokens[$next]['code'] === T_SEMICOLON || $tokens[$next]['code'] === T_COMMA)
-            ) {
-                $scopeCloser = $next;
-            }
-        }
 
         $trailingContent = $phpcsFile->findNext(
             T_WHITESPACE,

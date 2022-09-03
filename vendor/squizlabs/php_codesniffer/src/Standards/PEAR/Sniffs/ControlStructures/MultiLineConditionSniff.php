@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\PEAR\Sniffs\ControlStructures;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Util\Tokens;
 
 class MultiLineConditionSniff implements Sniff
@@ -73,7 +73,7 @@ class MultiLineConditionSniff implements Sniff
             if (strpos($tokens[($openBracket + 1)]['content'], $phpcsFile->eolChar) !== false) {
                 $spaceAfterOpen = 'newline';
             } else {
-                $spaceAfterOpen = $tokens[($openBracket + 1)]['length'];
+                $spaceAfterOpen = strlen($tokens[($openBracket + 1)]['content']);
             }
         }
 
@@ -100,7 +100,7 @@ class MultiLineConditionSniff implements Sniff
         }
 
         if ($i >= 0 && $tokens[$i]['code'] === T_WHITESPACE) {
-            $statementIndent = $tokens[$i]['length'];
+            $statementIndent = strlen($tokens[$i]['content']);
         }
 
         // Each line between the parenthesis should be indented 4 spaces
@@ -157,7 +157,7 @@ class MultiLineConditionSniff implements Sniff
                 if ($tokens[$i]['code'] !== T_WHITESPACE) {
                     $foundIndent = 0;
                 } else {
-                    $foundIndent = $tokens[$i]['length'];
+                    $foundIndent = strlen($tokens[$i]['content']);
                 }
 
                 if ($expectedIndent !== $foundIndent) {
@@ -247,7 +247,7 @@ class MultiLineConditionSniff implements Sniff
         } else if ($openBrace === ($closeBracket + 2)
             && $tokens[($closeBracket + 1)]['code'] === T_WHITESPACE
         ) {
-            $length = $tokens[($closeBracket + 1)]['length'];
+            $length = strlen($tokens[($closeBracket + 1)]['content']);
         } else {
             // Confused, so don't check.
             $length = 1;

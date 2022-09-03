@@ -13,8 +13,8 @@
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 
 class SuperfluousWhitespaceSniff implements Sniff
 {
@@ -49,7 +49,6 @@ class SuperfluousWhitespaceSniff implements Sniff
     {
         return [
             T_OPEN_TAG,
-            T_OPEN_TAG_WITH_ECHO,
             T_CLOSE_TAG,
             T_WHITESPACE,
             T_COMMENT,
@@ -79,7 +78,7 @@ class SuperfluousWhitespaceSniff implements Sniff
             */
 
             if ($phpcsFile->tokenizerType !== 'PHP') {
-                // The first token is always the open tag inserted when tokenized
+                // The first token is always the open tag inserted when tokenizsed
                 // and the second token is always the first piece of content in
                 // the file. If the second token is whitespace, there was
                 // whitespace at the start of the file.
@@ -229,13 +228,6 @@ class SuperfluousWhitespaceSniff implements Sniff
                 && $tokens[($stackPtr - 1)]['line'] < $tokens[$stackPtr]['line']
                 && $tokens[($stackPtr - 2)]['line'] === $tokens[($stackPtr - 1)]['line']
             ) {
-                // Properties and functions in nested classes have their own rules for spacing.
-                $conditions   = $tokens[$stackPtr]['conditions'];
-                $deepestScope = end($conditions);
-                if ($deepestScope === T_ANON_CLASS) {
-                    return;
-                }
-
                 // This is an empty line and the line before this one is not
                 // empty, so this could be the start of a multiple empty
                 // line block.

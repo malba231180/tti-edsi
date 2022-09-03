@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Generic\Sniffs\Functions;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Util\Tokens;
 
 class CallTimePassByReferenceSniff implements Sniff
@@ -45,8 +45,10 @@ class CallTimePassByReferenceSniff implements Sniff
     {
         $tokens = $phpcsFile->getTokens();
 
-        $findTokens   = Tokens::$emptyTokens;
-        $findTokens[] = T_BITWISE_AND;
+        $findTokens = array_merge(
+            Tokens::$emptyTokens,
+            [T_BITWISE_AND]
+        );
 
         $prev = $phpcsFile->findPrevious($findTokens, ($stackPtr - 1), null, true);
 

@@ -12,11 +12,9 @@ namespace PHP_CodeSniffer\Filters;
 use PHP_CodeSniffer\Util;
 use PHP_CodeSniffer\Ruleset;
 use PHP_CodeSniffer\Config;
-use ReturnTypeWillChange;
 
 class Filter extends \RecursiveFilterIterator
 {
-
     /**
      * The top-level path we are filtering.
      *
@@ -90,7 +88,6 @@ class Filter extends \RecursiveFilterIterator
      *
      * @return bool
      */
-    #[ReturnTypeWillChange]
     public function accept()
     {
         $filePath = $this->current();
@@ -132,11 +129,9 @@ class Filter extends \RecursiveFilterIterator
      *
      * @return \RecursiveIterator
      */
-    #[ReturnTypeWillChange]
     public function getChildren()
     {
-        $filterClass = get_called_class();
-        $children    = new $filterClass(
+        $children = new static(
             new \RecursiveDirectoryIterator($this->current(), (\RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS)),
             $this->basedir,
             $this->config,
@@ -204,24 +199,14 @@ class Filter extends \RecursiveFilterIterator
             $this->ignoreDirPatterns  = [];
             $this->ignoreFilePatterns = [];
 
-            $ignorePatterns        = $this->config->ignored;
-            $rulesetIgnorePatterns = $this->ruleset->getIgnorePatterns();
-            foreach ($rulesetIgnorePatterns as $pattern => $type) {
-                // Ignore standard/sniff specific exclude rules.
-                if (is_array($type) === true) {
-                    continue;
-                }
-
-                $ignorePatterns[$pattern] = $type;
-            }
-
+            $ignorePatterns = array_merge($this->config->ignored, $this->ruleset->getIgnorePatterns());
             foreach ($ignorePatterns as $pattern => $type) {
                 // If the ignore pattern ends with /* then it is ignoring an entire directory.
                 if (substr($pattern, -2) === '/*') {
                     // Need to check this pattern for dirs as well as individual file paths.
                     $this->ignoreFilePatterns[$pattern] = $type;
 
-                    $pattern = substr($pattern, 0, -2).'(?=/|$)';
+                    $pattern = substr($pattern, 0, -2);
                     $this->ignoreDirPatterns[$pattern] = $type;
                 } else {
                     // This is a file-specific pattern, so only need to check this
@@ -229,7 +214,7 @@ class Filter extends \RecursiveFilterIterator
                     $this->ignoreFilePatterns[$pattern] = $type;
                 }
             }
-        }//end if
+        }
 
         $relativePath = $path;
         if (strpos($path, $this->basedir) === 0) {

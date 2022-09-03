@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\PEAR\Sniffs\Formatting;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 
 class MultiLineAssignmentSniff implements Sniff
 {
@@ -83,14 +83,14 @@ class MultiLineAssignmentSniff implements Sniff
         }
 
         if ($tokens[$i]['code'] === T_WHITESPACE) {
-            $assignmentIndent = $tokens[$i]['length'];
+            $assignmentIndent = strlen($tokens[$i]['content']);
         }
 
         // Find the actual indent.
         $prev = $phpcsFile->findPrevious(T_WHITESPACE, ($stackPtr - 1));
 
         $expectedIndent = ($assignmentIndent + $this->indent);
-        $foundIndent    = $tokens[$prev]['length'];
+        $foundIndent    = strlen($tokens[$prev]['content']);
         if ($foundIndent !== $expectedIndent) {
             $error = 'Multi-line assignment not indented correctly; expected %s spaces but found %s';
             $data  = [

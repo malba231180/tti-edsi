@@ -12,3 +12,5 @@ if ($something) {
 } else if ($somethingElse) {
 } elseif ($another) {
 }
+
+?>

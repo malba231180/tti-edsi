@@ -12,18 +12,18 @@ class MyClass
     $_varName = 'hello';
 
     public $varName  = 'hello';
-    public bool $var_name = false;
+    public $var_name = 'hello';
     public $varname  = 'hello';
     public $_varName = 'hello';
 
     protected $varName  = 'hello';
-    protected string $var_name = 'hello';
+    protected $var_name = 'hello';
     protected $varname  = 'hello';
-    protected ?string $_varName = 'hello';
+    protected $_varName = 'hello';
 
     private $_varName  = 'hello';
     private $_var_name = 'hello';
-    private int $_varname  = 1;
+    private $_varname  = 'hello';
     private $varName   = 'hello';
 }
 
@@ -132,26 +132,4 @@ class TestClass
      * @var array
      */
     private static $_foo = [];
-}
-
-$anonClass = new class() {
-    public function foo($foo, $_foo, $foo_bar) {
-        $bar = 1;
-        $_bar = 2;
-        $bar_foo = 3;
-    }
-};
-
-echo $obj?->varName;
-echo $obj?->var_name;
-echo $obj?->varname;
-echo $obj?->_varName;
-
-enum SomeEnum
-{
-    public function foo($foo, $_foo, $foo_bar) {
-        $bar = 1;
-        $_bar = 2;
-        $bar_foo = 3;
-    }
 }

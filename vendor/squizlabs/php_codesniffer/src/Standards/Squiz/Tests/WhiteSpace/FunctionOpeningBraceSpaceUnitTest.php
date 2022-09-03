@@ -32,9 +32,8 @@ class FunctionOpeningBraceSpaceUnitTest extends AbstractSniffUnitTest
             return [
                 10 => 1,
                 25 => 1,
-                49 => 1,
             ];
-
+            break;
         case 'FunctionOpeningBraceSpaceUnitTest.js':
             return [
                 11 => 1,
@@ -42,9 +41,10 @@ class FunctionOpeningBraceSpaceUnitTest extends AbstractSniffUnitTest
                 38 => 1,
                 88 => 1,
             ];
-
+            break;
         default:
             return [];
+            break;
         }//end switch
 
     }//end getErrorList()

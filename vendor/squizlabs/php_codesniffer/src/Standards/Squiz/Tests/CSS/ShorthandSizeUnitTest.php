@@ -35,7 +35,6 @@ class ShorthandSizeUnitTest extends AbstractSniffUnitTest
             15 => 1,
             16 => 1,
             17 => 1,
-            21 => 1,
         ];
 
     }//end getErrorList()

@@ -30,18 +30,15 @@ class ClosingTagUnitTest extends AbstractSniffUnitTest
         switch ($testFile) {
         case 'ClosingTagUnitTest.1.inc':
             return [11 => 1];
-
+            break;
         case 'ClosingTagUnitTest.3.inc':
         case 'ClosingTagUnitTest.4.inc':
         case 'ClosingTagUnitTest.5.inc':
-        case 'ClosingTagUnitTest.7.inc':
             return [1 => 1];
-
-        case 'ClosingTagUnitTest.6.inc':
-            return [3 => 1];
-
+            break;
         default:
             return [];
+            break;
         }
 
     }//end getErrorList()

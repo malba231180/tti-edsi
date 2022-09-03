@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 
 class ObjectOperatorSpacingSniff implements Sniff
 {
@@ -33,7 +33,6 @@ class ObjectOperatorSpacingSniff implements Sniff
         return [
             T_OBJECT_OPERATOR,
             T_DOUBLE_COLON,
-            T_NULLSAFE_OBJECT_OPERATOR,
         ];
 
     }//end register()

@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Generic\Sniffs\Files;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 
 class OneInterfacePerFileSniff implements Sniff
 {
@@ -39,13 +39,7 @@ class OneInterfacePerFileSniff implements Sniff
      */
     public function process(File $phpcsFile, $stackPtr)
     {
-        $tokens = $phpcsFile->getTokens();
-        $start  = ($stackPtr + 1);
-        if (isset($tokens[$stackPtr]['scope_closer']) === true) {
-            $start = ($tokens[$stackPtr]['scope_closer'] + 1);
-        }
-
-        $nextInterface = $phpcsFile->findNext($this->register(), $start);
+        $nextInterface = $phpcsFile->findNext($this->register(), ($stackPtr + 1));
         if ($nextInterface !== false) {
             $error = 'Only one interface is allowed in a file';
             $phpcsFile->addError($error, $nextInterface, 'MultipleFound');

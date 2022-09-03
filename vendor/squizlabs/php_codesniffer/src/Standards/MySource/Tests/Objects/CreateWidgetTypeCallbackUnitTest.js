@@ -30,7 +30,7 @@ SampleWidgetType.prototype = {
             callback.call(self, div);
         });
 
-        // Never good to return a value.
+        // Never good to return a vaue.
         return something;
 
         callback.call(self);

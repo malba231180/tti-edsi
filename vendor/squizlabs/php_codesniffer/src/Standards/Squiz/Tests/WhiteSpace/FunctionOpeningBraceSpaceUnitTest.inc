@@ -37,18 +37,4 @@ function emptyFunction()
 }//end emptyFunction();
 
 public function register();
-
-function allOnOneLine() { echo 'abc'; }
-
-$a = function()
-{
-	echo 'Testing a closure';
-};
-
-$a = function()
-{
-
-
-
-	echo 'Testing a closure';
-};
+?>

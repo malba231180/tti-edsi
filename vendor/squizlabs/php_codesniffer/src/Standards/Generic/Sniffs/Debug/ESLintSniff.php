@@ -9,10 +9,9 @@
 
 namespace PHP_CodeSniffer\Standards\Generic\Sniffs\Debug;
 
-use PHP_CodeSniffer\Config;
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
-use PHP_CodeSniffer\Util\Common;
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Config;
 
 class ESLintSniff implements Sniff
 {
@@ -23,6 +22,7 @@ class ESLintSniff implements Sniff
      * @var array
      */
     public $supportedTokenizers = ['JS'];
+
 
     /**
      * ESLint configuration file path.
@@ -77,7 +77,7 @@ class ESLintSniff implements Sniff
             $eslintOptions[] = '--config '.escapeshellarg($configFile);
         }
 
-        $cmd = Common::escapeshellcmd(escapeshellarg($eslintPath).' '.implode(' ', $eslintOptions).' '.escapeshellarg($filename));
+        $cmd = escapeshellcmd(escapeshellarg($eslintPath).' '.implode(' ', $eslintOptions).' '.escapeshellarg($filename));
 
         // Execute!
         exec($cmd, $stdout, $code);

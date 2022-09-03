@@ -9,20 +9,13 @@
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\Commenting;
 
-use PHP_CodeSniffer\Config;
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Standards\PEAR\Sniffs\Commenting\FunctionCommentSniff as PEARFunctionCommentSniff;
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Config;
 use PHP_CodeSniffer\Util\Common;
 
 class FunctionCommentSniff extends PEARFunctionCommentSniff
 {
-
-    /**
-     * Whether to skip inheritdoc comments.
-     *
-     * @var boolean
-     */
-    public $skipIfInheritdoc = false;
 
     /**
      * The current PHP version.
@@ -47,12 +40,6 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
         $tokens = $phpcsFile->getTokens();
         $return = null;
 
-        if ($this->skipIfInheritdoc === true) {
-            if ($this->checkInheritdoc($phpcsFile, $stackPtr, $commentStart) === true) {
-                return;
-            }
-        }
-
         foreach ($tokens[$commentStart]['comment_tags'] as $tag) {
             if ($tokens[$tag]['content'] === '@return') {
                 if ($return !== null) {
@@ -67,7 +54,10 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
 
         // Skip constructor and destructor.
         $methodName      = $phpcsFile->getDeclarationName($stackPtr);
-        $isSpecialMethod = in_array($methodName,  $this->specialMethods, true);
+        $isSpecialMethod = ($methodName === '__construct' || $methodName === '__destruct');
+        if ($isSpecialMethod === true) {
+            return;
+        }
 
         if ($return !== null) {
             $content = $tokens[($return + 2)]['content'];
@@ -88,7 +78,7 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
                 $suggestedNames = [];
                 foreach ($typeNames as $i => $typeName) {
                     $suggestedName = Common::suggestType($typeName);
-                    if (in_array($suggestedName, $suggestedNames, true) === false) {
+                    if (in_array($suggestedName, $suggestedNames) === false) {
                         $suggestedNames[] = $suggestedName;
                     }
                 }
@@ -178,10 +168,6 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
                 }//end if
             }//end if
         } else {
-            if ($isSpecialMethod === true) {
-                return;
-            }
-
             $error = 'Missing @return tag in function comment';
             $phpcsFile->addError($error, $tokens[$commentStart]['comment_closer'], 'MissingReturn');
         }//end if
@@ -202,12 +188,6 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
     protected function processThrows(File $phpcsFile, $stackPtr, $commentStart)
     {
         $tokens = $phpcsFile->getTokens();
-
-        if ($this->skipIfInheritdoc === true) {
-            if ($this->checkInheritdoc($phpcsFile, $stackPtr, $commentStart) === true) {
-                return;
-            }
-        }
 
         foreach ($tokens[$commentStart]['comment_tags'] as $pos => $tag) {
             if ($tokens[$tag]['content'] !== '@throws') {
@@ -245,10 +225,8 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
                     }
                 }
 
-                $comment = trim($comment);
-
                 // Starts with a capital letter and ends with a fullstop.
-                $firstChar = $comment[0];
+                $firstChar = $comment{0};
                 if (strtoupper($firstChar) !== $firstChar) {
                     $error = '@throws tag comment must start with a capital letter';
                     $phpcsFile->addError($error, ($tag + 2), 'ThrowsNotCapital');
@@ -285,12 +263,6 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
         }
 
         $tokens = $phpcsFile->getTokens();
-
-        if ($this->skipIfInheritdoc === true) {
-            if ($this->checkInheritdoc($phpcsFile, $stackPtr, $commentStart) === true) {
-                return;
-            }
-        }
 
         $params  = [];
         $maxType = 0;
@@ -347,7 +319,7 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
                             if ($tokens[$i]['code'] === T_DOC_COMMENT_STRING) {
                                 $indent = 0;
                                 if ($tokens[($i - 1)]['code'] === T_DOC_COMMENT_WHITESPACE) {
-                                    $indent = $tokens[($i - 1)]['length'];
+                                    $indent = strlen($tokens[($i - 1)]['content']);
                                 }
 
                                 $comment       .= ' '.$tokens[$i]['content'];
@@ -425,7 +397,7 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
                     $suggestedTypeHint = 'callable';
                 } else if (strpos($suggestedName, 'callback') !== false) {
                     $suggestedTypeHint = 'callable';
-                } else if (in_array($suggestedName, Common::$allowedTypes, true) === false) {
+                } else if (in_array($suggestedName, Common::$allowedTypes) === false) {
                     $suggestedTypeHint = $suggestedName;
                 }
 
@@ -444,12 +416,6 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
                 if ($this->phpVersion >= 70200) {
                     if ($suggestedName === 'object') {
                         $suggestedTypeHint = 'object';
-                    }
-                }
-
-                if ($this->phpVersion >= 80000) {
-                    if ($suggestedName === 'mixed') {
-                        $suggestedTypeHint = 'mixed';
                     }
                 }
 
@@ -498,7 +464,7 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
                 }//end if
             }//end foreach
 
-            $suggestedType = implode('|', $suggestedTypeNames);
+            $suggestedType = implode($suggestedTypeNames, '|');
             if ($param['type'] !== $suggestedType) {
                 $error = 'Expected "%s" but found "%s" for parameter type';
                 $data  = [
@@ -582,7 +548,7 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
             // Check number of spaces after the var name.
             $this->checkSpacingAfterParamName($phpcsFile, $param, $maxVar);
 
-            // Param comments must start with a capital letter and end with a full stop.
+            // Param comments must start with a capital letter and end with the full stop.
             if (preg_match('/^(\p{Ll}|\P{L})/u', $param['comment']) === 1) {
                 $error = 'Parameter comment must start with a capital letter';
                 $phpcsFile->addError($error, $param['tag'], 'ParamCommentNotCapital');
@@ -727,42 +693,6 @@ class FunctionCommentSniff extends PEARFunctionCommentSniff
         }//end if
 
     }//end checkSpacingAfterParamName()
-
-
-    /**
-     * Determines whether the whole comment is an inheritdoc comment.
-     *
-     * @param \PHP_CodeSniffer\Files\File $phpcsFile    The file being scanned.
-     * @param int                         $stackPtr     The position of the current token
-     *                                                  in the stack passed in $tokens.
-     * @param int                         $commentStart The position in the stack where the comment started.
-     *
-     * @return boolean TRUE if the docblock contains only {@inheritdoc} (case-insensitive).
-     */
-    protected function checkInheritdoc(File $phpcsFile, $stackPtr, $commentStart)
-    {
-        $tokens = $phpcsFile->getTokens();
-
-        $allowedTokens = [
-            T_DOC_COMMENT_OPEN_TAG,
-            T_DOC_COMMENT_WHITESPACE,
-            T_DOC_COMMENT_STAR,
-        ];
-        for ($i = $commentStart; $i <= $tokens[$commentStart]['comment_closer']; $i++) {
-            if (in_array($tokens[$i]['code'], $allowedTokens) === false) {
-                $trimmedContent = strtolower(trim($tokens[$i]['content']));
-
-                if ($trimmedContent === '{@inheritdoc}') {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        }
-
-        return false;
-
-    }//end checkInheritdoc()
 
 
 }//end class

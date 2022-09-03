@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\ControlStructures;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Util\Tokens;
 
 class ControlSignatureSniff implements Sniff
@@ -53,7 +53,6 @@ class ControlSignatureSniff implements Sniff
             T_ELSE,
             T_ELSEIF,
             T_SWITCH,
-            T_MATCH,
         ];
 
     }//end register()
@@ -72,8 +71,7 @@ class ControlSignatureSniff implements Sniff
     {
         $tokens = $phpcsFile->getTokens();
 
-        $nextNonEmpty = $phpcsFile->findNext(Tokens::$emptyTokens, ($stackPtr + 1), null, true);
-        if ($nextNonEmpty === false) {
+        if (isset($tokens[($stackPtr + 1)]) === false) {
             return;
         }
 
@@ -100,7 +98,7 @@ class ControlSignatureSniff implements Sniff
             if (strpos($tokens[($stackPtr + 1)]['content'], $phpcsFile->eolChar) !== false) {
                 $found = 'newline';
             } else {
-                $found = $tokens[($stackPtr + 1)]['length'];
+                $found = strlen($tokens[($stackPtr + 1)]['content']);
             }
         }
 
@@ -231,26 +229,23 @@ class ControlSignatureSniff implements Sniff
                 }
             }//end if
         } else if ($tokens[$stackPtr]['code'] === T_WHILE) {
-            // Zero spaces after parenthesis closer, but only if followed by a semicolon.
-            $closer       = $tokens[$stackPtr]['parenthesis_closer'];
-            $nextNonEmpty = $phpcsFile->findNext(Tokens::$emptyTokens, ($closer + 1), null, true);
-            if ($nextNonEmpty !== false && $tokens[$nextNonEmpty]['code'] === T_SEMICOLON) {
-                $found = 0;
-                if ($tokens[($closer + 1)]['code'] === T_WHITESPACE) {
-                    if (strpos($tokens[($closer + 1)]['content'], $phpcsFile->eolChar) !== false) {
-                        $found = 'newline';
-                    } else {
-                        $found = $tokens[($closer + 1)]['length'];
-                    }
+            // Zero spaces after parenthesis closer.
+            $closer = $tokens[$stackPtr]['parenthesis_closer'];
+            $found  = 0;
+            if ($tokens[($closer + 1)]['code'] === T_WHITESPACE) {
+                if (strpos($tokens[($closer + 1)]['content'], $phpcsFile->eolChar) !== false) {
+                    $found = 'newline';
+                } else {
+                    $found = strlen($tokens[($closer + 1)]['content']);
                 }
+            }
 
-                if ($found !== 0) {
-                    $error = 'Expected 0 spaces before semicolon; %s found';
-                    $data  = [$found];
-                    $fix   = $phpcsFile->addFixableError($error, $closer, 'SpaceBeforeSemicolon', $data);
-                    if ($fix === true) {
-                        $phpcsFile->fixer->replaceToken(($closer + 1), '');
-                    }
+            if ($found !== 0) {
+                $error = 'Expected 0 spaces before semicolon; %s found';
+                $data  = [$found];
+                $fix   = $phpcsFile->addFixableError($error, $closer, 'SpaceBeforeSemicolon', $data);
+                if ($fix === true) {
+                    $phpcsFile->fixer->replaceToken(($closer + 1), '');
                 }
             }
         }//end if
@@ -296,7 +291,7 @@ class ControlSignatureSniff implements Sniff
         } else if ($tokens[$closer]['line'] !== $tokens[$stackPtr]['line']) {
             $found = 'newline';
         } else if ($tokens[($closer + 1)]['content'] !== ' ') {
-            $found = $tokens[($closer + 1)]['length'];
+            $found = strlen($tokens[($closer + 1)]['content']);
         }
 
         if ($found !== 1) {

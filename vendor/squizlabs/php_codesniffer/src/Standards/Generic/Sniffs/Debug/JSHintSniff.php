@@ -10,10 +10,9 @@
 
 namespace PHP_CodeSniffer\Standards\Generic\Sniffs\Debug;
 
-use PHP_CodeSniffer\Config;
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
-use PHP_CodeSniffer\Util\Common;
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Config;
 
 class JSHintSniff implements Sniff
 {
@@ -52,36 +51,28 @@ class JSHintSniff implements Sniff
     {
         $rhinoPath  = Config::getExecutablePath('rhino');
         $jshintPath = Config::getExecutablePath('jshint');
-        if ($rhinoPath === null && $jshintPath === null) {
+        if ($rhinoPath === null || $jshintPath === null) {
             return;
         }
 
-        $fileName   = $phpcsFile->getFilename();
-        $jshintPath = Common::escapeshellcmd($jshintPath);
+        $fileName = $phpcsFile->getFilename();
 
-        if ($rhinoPath !== null) {
-            $rhinoPath = Common::escapeshellcmd($rhinoPath);
-            $cmd       = "$rhinoPath \"$jshintPath\" ".escapeshellarg($fileName);
-            exec($cmd, $output, $retval);
+        $rhinoPath  = escapeshellcmd($rhinoPath);
+        $jshintPath = escapeshellcmd($jshintPath);
 
-            $regex = '`^(?P<error>.+)\(.+:(?P<line>[0-9]+).*:[0-9]+\)$`';
-        } else {
-            $cmd = "$jshintPath ".escapeshellarg($fileName);
-            exec($cmd, $output, $retval);
-
-            $regex = '`^(.+?): line (?P<line>[0-9]+), col [0-9]+, (?P<error>.+)$`';
-        }
+        $cmd = "$rhinoPath \"$jshintPath\" ".escapeshellarg($fileName);
+        exec($cmd, $output, $retval);
 
         if (is_array($output) === true) {
             foreach ($output as $finding) {
                 $matches    = [];
-                $numMatches = preg_match($regex, $finding, $matches);
+                $numMatches = preg_match('/^(.+)\(.+:([0-9]+).*:[0-9]+\)$/', $finding, $matches);
                 if ($numMatches === 0) {
                     continue;
                 }
 
-                $line    = (int) $matches['line'];
-                $message = 'jshint says: '.trim($matches['error']);
+                $line    = (int) $matches[2];
+                $message = 'jshint says: '.trim($matches[1]);
                 $phpcsFile->addWarningOnLine($message, $line, 'ExternalTool');
             }
         }

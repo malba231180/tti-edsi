@@ -9,9 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\PHP;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
-use PHP_CodeSniffer\Util\Tokens;
+use PHP_CodeSniffer\Files\File;
 
 class LowercasePHPFunctionsSniff implements Sniff
 {
@@ -61,71 +60,27 @@ class LowercasePHPFunctionsSniff implements Sniff
     {
         $tokens = $phpcsFile->getTokens();
 
-        $content   = $tokens[$stackPtr]['content'];
-        $contentLc = strtolower($content);
-        if ($content === $contentLc) {
-            return;
-        }
-
-        // Make sure it is an inbuilt PHP function.
-        // PHP_CodeSniffer can possibly include user defined functions
-        // through the use of vendor/autoload.php.
-        if (isset($this->builtInFunctions[$contentLc]) === false) {
-            return;
-        }
-
-        // Make sure this is a function call or a use statement.
-        $next = $phpcsFile->findNext(Tokens::$emptyTokens, ($stackPtr + 1), null, true);
+        // Make sure this is a function call.
+        $next = $phpcsFile->findNext(T_WHITESPACE, ($stackPtr + 1), null, true);
         if ($next === false) {
             // Not a function call.
             return;
         }
 
-        $ignore   = Tokens::$emptyTokens;
-        $ignore[] = T_BITWISE_AND;
-        $prev     = $phpcsFile->findPrevious($ignore, ($stackPtr - 1), null, true);
-        $prevPrev = $phpcsFile->findPrevious(Tokens::$emptyTokens, ($prev - 1), null, true);
-
         if ($tokens[$next]['code'] !== T_OPEN_PARENTHESIS) {
-            // Is this a use statement importing a PHP native function ?
-            if ($tokens[$next]['code'] !== T_NS_SEPARATOR
-                && $tokens[$prev]['code'] === T_STRING
-                && $tokens[$prev]['content'] === 'function'
-                && $prevPrev !== false
-                && $tokens[$prevPrev]['code'] === T_USE
-            ) {
-                $error = 'Use statements for PHP native functions must be lowercase; expected "%s" but found "%s"';
-                $data  = [
-                    $contentLc,
-                    $content,
-                ];
-
-                $fix = $phpcsFile->addFixableError($error, $stackPtr, 'UseStatementUppercase', $data);
-                if ($fix === true) {
-                    $phpcsFile->fixer->replaceToken($stackPtr, $contentLc);
-                }
-            }
-
-            // No open parenthesis; not a "use function" statement nor a function call.
+            // Not a function call.
             return;
-        }//end if
+        }
 
+        $prev = $phpcsFile->findPrevious([T_WHITESPACE, T_BITWISE_AND], ($stackPtr - 1), null, true);
         if ($tokens[$prev]['code'] === T_FUNCTION) {
             // Function declaration, not a function call.
             return;
         }
 
         if ($tokens[$prev]['code'] === T_NS_SEPARATOR) {
-            if ($prevPrev !== false
-                && ($tokens[$prevPrev]['code'] === T_STRING
-                || $tokens[$prevPrev]['code'] === T_NAMESPACE
-                || $tokens[$prevPrev]['code'] === T_NEW)
-            ) {
-                // Namespaced class/function, not an inbuilt function.
-                // Could potentially give false negatives for non-namespaced files
-                // when namespace\functionName() is encountered.
-                return;
-            }
+            // Namespaced class/function, not an inbuilt function.
+            return;
         }
 
         if ($tokens[$prev]['code'] === T_NEW) {
@@ -133,9 +88,7 @@ class LowercasePHPFunctionsSniff implements Sniff
             return;
         }
 
-        if ($tokens[$prev]['code'] === T_OBJECT_OPERATOR
-            || $tokens[$prev]['code'] === T_NULLSAFE_OBJECT_OPERATOR
-        ) {
+        if ($tokens[$prev]['code'] === T_OBJECT_OPERATOR) {
             // Not an inbuilt function.
             return;
         }
@@ -145,15 +98,25 @@ class LowercasePHPFunctionsSniff implements Sniff
             return;
         }
 
-        $error = 'Calls to PHP native functions must be lowercase; expected "%s" but found "%s"';
-        $data  = [
-            $contentLc,
-            $content,
-        ];
+        // Make sure it is an inbuilt PHP function.
+        // PHP_CodeSniffer can possibly include user defined functions
+        // through the use of vendor/autoload.php.
+        $content = $tokens[$stackPtr]['content'];
+        if (isset($this->builtInFunctions[strtolower($content)]) === false) {
+            return;
+        }
 
-        $fix = $phpcsFile->addFixableError($error, $stackPtr, 'CallUppercase', $data);
-        if ($fix === true) {
-            $phpcsFile->fixer->replaceToken($stackPtr, $contentLc);
+        if ($content !== strtolower($content)) {
+            $error = 'Calls to inbuilt PHP functions must be lowercase; expected "%s" but found "%s"';
+            $data  = [
+                strtolower($content),
+                $content,
+            ];
+
+            $fix = $phpcsFile->addFixableError($error, $stackPtr, 'CallUppercase', $data);
+            if ($fix === true) {
+                $phpcsFile->fixer->replaceToken($stackPtr, strtolower($content));
+            }
         }
 
     }//end process()

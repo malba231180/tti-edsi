@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Generic\Sniffs\Files;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 
 class EndFileNoNewlineSniff implements Sniff
 {
@@ -34,10 +34,7 @@ class EndFileNoNewlineSniff implements Sniff
      */
     public function register()
     {
-        return [
-            T_OPEN_TAG,
-            T_OPEN_TAG_WITH_ECHO,
-        ];
+        return [T_OPEN_TAG];
 
     }//end register()
 
@@ -58,7 +55,7 @@ class EndFileNoNewlineSniff implements Sniff
         $stackPtr = ($phpcsFile->numTokens - 1);
 
         if ($tokens[$stackPtr]['content'] === '') {
-            --$stackPtr;
+            $stackPtr--;
         }
 
         $eolCharLen = strlen($phpcsFile->eolChar);
@@ -67,18 +64,8 @@ class EndFileNoNewlineSniff implements Sniff
             $error = 'File must not end with a newline character';
             $fix   = $phpcsFile->addFixableError($error, $stackPtr, 'Found');
             if ($fix === true) {
-                $phpcsFile->fixer->beginChangeset();
-
-                for ($i = $stackPtr; $i > 0; $i--) {
-                    $newContent = rtrim($tokens[$i]['content'], $phpcsFile->eolChar);
-                    $phpcsFile->fixer->replaceToken($i, $newContent);
-
-                    if ($newContent !== '') {
-                        break;
-                    }
-                }
-
-                $phpcsFile->fixer->endChangeset();
+                $newContent = substr($tokens[$stackPtr]['content'], 0, ($eolCharLen * -1));
+                $phpcsFile->fixer->replaceToken($stackPtr, $newContent);
             }
         }
 

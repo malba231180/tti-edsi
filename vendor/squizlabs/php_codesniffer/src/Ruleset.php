@@ -11,8 +11,8 @@
 
 namespace PHP_CodeSniffer;
 
-use PHP_CodeSniffer\Exceptions\RuntimeException;
 use PHP_CodeSniffer\Util;
+use PHP_CodeSniffer\Exceptions\RuntimeException;
 
 class Ruleset
 {
@@ -67,7 +67,7 @@ class Ruleset
      * The key is the fully qualified name of the sniff class
      * and the value is the sniff object.
      *
-     * @var array<string, \PHP_CodeSniffer\Sniffs\Sniff>
+     * @var array<string, \PHP_CodeSniffer\Sniff>
      */
     public $sniffs = [];
 
@@ -87,7 +87,7 @@ class Ruleset
      * The key is the token name being listened for and the value
      * is the sniff object.
      *
-     * @var array<int, \PHP_CodeSniffer\Sniffs\Sniff>
+     * @var array<int, \PHP_CodeSniffer\Sniff>
      */
     public $tokenListeners = [];
 
@@ -122,13 +122,18 @@ class Ruleset
      * @param \PHP_CodeSniffer\Config $config The config data for the run.
      *
      * @return void
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException If no sniffs were registered.
      */
     public function __construct(Config $config)
     {
+        // Ignore sniff restrictions if caching is on.
+        $restrictions = [];
+        $exclusions   = [];
+        if ($config->cache === false) {
+            $restrictions = $config->sniffs;
+            $exclusions   = $config->exclude;
+        }
+
         $this->config = $config;
-        $restrictions = $config->sniffs;
-        $exclusions   = $config->exclude;
         $sniffs       = [];
 
         $standardPaths = [];
@@ -156,7 +161,8 @@ class Ruleset
                     $this->name .= ', ';
                 }
 
-                $this->name .= $standardName;
+                $this->name   .= $standardName;
+                $this->paths[] = $standard;
 
                 // Allow autoloading of custom files inside this standard.
                 if (isset($ruleset['namespace']) === true) {
@@ -193,12 +199,6 @@ class Ruleset
 
             $sniffs = array_merge($sniffs, $this->processRuleset($standard));
         }//end foreach
-
-        // Ignore sniff restrictions if caching is on.
-        if ($config->cache === true) {
-            $restrictions = [];
-            $exclusions   = [];
-        }
 
         $sniffRestrictions = [];
         foreach ($restrictions as $sniffCode) {
@@ -305,8 +305,7 @@ class Ruleset
      *                            is only used for debug output.
      *
      * @return string[]
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException - If the ruleset path is invalid.
-     *                                                      - If a specified autoload file could not be found.
+     * @throws RuntimeException If the ruleset path is invalid.
      */
     public function processRuleset($rulesetPath, $depth=0)
     {
@@ -316,26 +315,15 @@ class Ruleset
             echo 'Processing ruleset '.Util\Common::stripBasepath($rulesetPath, $this->config->basepath).PHP_EOL;
         }
 
-        libxml_use_internal_errors(true);
-        $ruleset = simplexml_load_string(file_get_contents($rulesetPath));
+        $ruleset = @simplexml_load_string(file_get_contents($rulesetPath));
         if ($ruleset === false) {
-            $errorMsg = "Ruleset $rulesetPath is not valid".PHP_EOL;
-            $errors   = libxml_get_errors();
-            foreach ($errors as $error) {
-                $errorMsg .= '- On line '.$error->line.', column '.$error->column.': '.$error->message;
-            }
-
-            libxml_clear_errors();
-            throw new RuntimeException($errorMsg);
+            throw new RuntimeException("Ruleset $rulesetPath is not valid");
         }
-
-        libxml_use_internal_errors(false);
 
         $ownSniffs      = [];
         $includedSniffs = [];
         $excludedSniffs = [];
 
-        $this->paths[]       = $rulesetPath;
         $rulesetDir          = dirname($rulesetPath);
         $this->rulesetDirs[] = $rulesetDir;
 
@@ -349,20 +337,18 @@ class Ruleset
             $ownSniffs = $this->expandSniffDirectory($sniffDir, $depth);
         }
 
-        // Include custom autoloaders.
+        // Included custom autoloaders.
         foreach ($ruleset->{'autoload'} as $autoload) {
             if ($this->shouldProcessElement($autoload) === false) {
                 continue;
             }
 
             $autoloadPath = (string) $autoload;
+            if (is_file($autoloadPath) === false) {
+                $autoloadPath = Util\Common::realPath(dirname($rulesetPath).DIRECTORY_SEPARATOR.$autoloadPath);
+            }
 
-            // Try relative autoload paths first.
-            $relativePath = Util\Common::realPath(dirname($rulesetPath).DIRECTORY_SEPARATOR.$autoloadPath);
-
-            if ($relativePath !== false && is_file($relativePath) === true) {
-                $autoloadPath = $relativePath;
-            } else if (is_file($autoloadPath) === false) {
+            if ($autoloadPath === false) {
                 throw new RuntimeException('The specified autoload file "'.$autoload.'" does not exist');
             }
 
@@ -424,7 +410,7 @@ class Ruleset
                     }
                 } else if (empty($newSniffs) === false) {
                     $newSniff = $newSniffs[0];
-                    if (in_array($newSniff, $ownSniffs, true) === false) {
+                    if (in_array($newSniff, $ownSniffs) === false) {
                         // Including a sniff that hasn't been included higher up, but
                         // only including a single message from it. So turn off all messages in
                         // the sniff, except this one.
@@ -471,7 +457,7 @@ class Ruleset
                     } else {
                         $excludedSniffs = array_merge(
                             $excludedSniffs,
-                            $this->expandRulesetReference((string) $exclude['name'], $rulesetDir, ($depth + 1))
+                            $this->expandRulesetReference($exclude['name'], $rulesetDir, ($depth + 1))
                         );
                     }
                 }//end foreach
@@ -592,7 +578,7 @@ class Ruleset
         // sniff list, but filter out any excluded sniffs.
         $files = [];
         foreach ($includedSniffs as $sniff) {
-            if (in_array($sniff, $excludedSniffs, true) === true) {
+            if (in_array($sniff, $excludedSniffs) === true) {
                 continue;
             } else {
                 $files[] = Util\Common::realpath($sniff);
@@ -674,7 +660,7 @@ class Ruleset
      *                           is only used for debug output.
      *
      * @return array
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException If the reference is invalid.
+     * @throws RuntimeException If the reference is invalid.
      */
     private function expandRulesetReference($ref, $rulesetDir, $depth=0)
     {
@@ -726,10 +712,10 @@ class Ruleset
         } else {
             // See if this is a whole standard being referenced.
             $path = Util\Standards::getInstalledStandardPath($ref);
-            if ($path !== null && Util\Common::isPharFile($path) === true && strpos($path, 'ruleset.xml') === false) {
+            if (Util\Common::isPharFile($path) === true && strpos($path, 'ruleset.xml') === false) {
                 // If the ruleset exists inside the phar file, use it.
                 if (file_exists($path.DIRECTORY_SEPARATOR.'ruleset.xml') === true) {
-                    $path .= DIRECTORY_SEPARATOR.'ruleset.xml';
+                    $path = $path.DIRECTORY_SEPARATOR.'ruleset.xml';
                 } else {
                     $path = null;
                 }
@@ -850,33 +836,24 @@ class Ruleset
     /**
      * Processes a rule from a ruleset XML file, overriding built-in defaults.
      *
-     * @param \SimpleXMLElement $rule      The rule object from a ruleset XML file.
-     * @param string[]          $newSniffs An array of sniffs that got included by this rule.
-     * @param int               $depth     How many nested processing steps we are in.
-     *                                     This is only used for debug output.
+     * @param SimpleXMLElement $rule      The rule object from a ruleset XML file.
+     * @param string[]         $newSniffs An array of sniffs that got included by this rule.
+     * @param int              $depth     How many nested processing steps we are in.
+     *                                    This is only used for debug output.
      *
      * @return void
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException If rule settings are invalid.
+     * @throws RuntimeException If rule settings are invalid.
      */
     private function processRule($rule, $newSniffs, $depth=0)
     {
         $ref  = (string) $rule['ref'];
         $todo = [$ref];
 
-        $parts      = explode('.', $ref);
-        $partsCount = count($parts);
-        if ($partsCount <= 2
-            || $partsCount > count(array_filter($parts))
-            || in_array($ref, $newSniffs) === true
-        ) {
-            // We are processing a standard, a category of sniffs or a relative path inclusion.
+        $parts = explode('.', $ref);
+        if (count($parts) <= 2) {
+            // We are processing a standard or a category of sniffs.
             foreach ($newSniffs as $sniffFile) {
-                $parts = explode(DIRECTORY_SEPARATOR, $sniffFile);
-                if (count($parts) === 1 && DIRECTORY_SEPARATOR === '\\') {
-                    // Path using forward slashes while running on Windows.
-                    $parts = explode('/', $sniffFile);
-                }
-
+                $parts         = explode(DIRECTORY_SEPARATOR, $sniffFile);
                 $sniffName     = array_pop($parts);
                 $sniffCategory = array_pop($parts);
                 array_pop($parts);
@@ -1096,7 +1073,7 @@ class Ruleset
     /**
      * Determine if an element should be processed or ignored.
      *
-     * @param \SimpleXMLElement $element An object from a ruleset XML file.
+     * @param SimpleXMLElement $element An object from a ruleset XML file.
      *
      * @return bool
      */
@@ -1194,10 +1171,10 @@ class Ruleset
 
 
     /**
-     * Populates the array of PHP_CodeSniffer_Sniff objects for this file.
+     * Populates the array of PHP_CodeSniffer_Sniff's for this file.
      *
      * @return void
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException If sniff registration fails.
+     * @throws RuntimeException If sniff registration fails.
      */
     public function populateTokenListeners()
     {

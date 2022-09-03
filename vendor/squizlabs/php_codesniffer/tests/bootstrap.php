@@ -44,13 +44,6 @@ if (class_exists('PHPUnit_Framework_TestResult') === true && class_exists('PHPUn
     class_alias('PHPUnit_Framework_TestResult', 'PHPUnit'.'\Framework\TestResult');
 }
 
-// Determine whether this is a PEAR install or not.
-$GLOBALS['PHP_CODESNIFFER_PEAR'] = false;
-
-if (is_file(__DIR__.'/../autoload.php') === false) {
-    $GLOBALS['PHP_CODESNIFFER_PEAR'] = true;
-}
-
 
 /**
  * A global util function to help print unit test fixing data.
@@ -59,33 +52,17 @@ if (is_file(__DIR__.'/../autoload.php') === false) {
  */
 function printPHPCodeSnifferTestOutput()
 {
-    echo PHP_EOL.PHP_EOL;
-
-    $output = 'The test files';
-    $data   = [];
-
     $codeCount = count($GLOBALS['PHP_CODESNIFFER_SNIFF_CODES']);
-    if (empty($GLOBALS['PHP_CODESNIFFER_SNIFF_CASE_FILES']) === false) {
-        $files     = call_user_func_array('array_merge', $GLOBALS['PHP_CODESNIFFER_SNIFF_CASE_FILES']);
-        $files     = array_unique($files);
-        $fileCount = count($files);
+    $files     = call_user_func_array('array_merge', $GLOBALS['PHP_CODESNIFFER_SNIFF_CASE_FILES']);
+    $files     = array_unique($files);
+    $fileCount = count($files);
 
-        $output = '%d sniff test files';
-        $data[] = $fileCount;
-    }
-
-    $output .= ' generated %d unique error codes';
-    $data[]  = $codeCount;
-
+    echo PHP_EOL.PHP_EOL;
+    echo "$fileCount sniff test files generated $codeCount unique error codes";
     if ($codeCount > 0) {
         $fixes   = count($GLOBALS['PHP_CODESNIFFER_FIXABLE_CODES']);
         $percent = round(($fixes / $codeCount * 100), 2);
-
-        $output .= '; %d were fixable (%d%%)';
-        $data[]  = $fixes;
-        $data[]  = $percent;
+        echo "; $fixes were fixable ($percent%)";
     }
-
-    vprintf($output, $data);
 
 }//end printPHPCodeSnifferTestOutput()

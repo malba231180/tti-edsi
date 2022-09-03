@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Squiz\Sniffs\PHP;
 
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Util\Tokens;
 
 class DisallowComparisonAssignmentSniff implements Sniff
@@ -68,24 +68,27 @@ class DisallowComparisonAssignmentSniff implements Sniff
 
         // Ignore function calls.
         $ignore = [
-            T_NULLSAFE_OBJECT_OPERATOR,
-            T_OBJECT_OPERATOR,
             T_STRING,
-            T_VARIABLE,
             T_WHITESPACE,
+            T_OBJECT_OPERATOR,
         ];
 
         $next = $phpcsFile->findNext($ignore, ($stackPtr + 1), null, true);
-        if ($tokens[$next]['code'] === T_CLOSURE
-            || ($tokens[$next]['code'] === T_OPEN_PARENTHESIS
-            && $tokens[($next - 1)]['code'] === T_STRING)
+        if ($tokens[$next]['code'] === T_OPEN_PARENTHESIS
+            && $tokens[($next - 1)]['code'] === T_STRING
         ) {
             // Code will look like: $var = myFunction(
             // and will be ignored.
             return;
         }
 
-        $endStatement = $phpcsFile->findEndOfStatement($stackPtr);
+        $endStatement = $phpcsFile->findNext(T_SEMICOLON, ($stackPtr + 1));
+        if ($tokens[$stackPtr]['conditions'] !== $tokens[$endStatement]['conditions']) {
+            // This statement doesn't end with a semicolon, which is the case for
+            // the last expression in a for loop.
+            return;
+        }
+
         for ($i = ($stackPtr + 1); $i < $endStatement; $i++) {
             if ((isset(Tokens::$comparisonTokens[$tokens[$i]['code']]) === true
                 && $tokens[$i]['code'] !== T_COALESCE)

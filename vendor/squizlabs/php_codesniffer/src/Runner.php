@@ -12,14 +12,14 @@
 
 namespace PHP_CodeSniffer;
 
-use PHP_CodeSniffer\Exceptions\DeepExitException;
-use PHP_CodeSniffer\Exceptions\RuntimeException;
-use PHP_CodeSniffer\Files\DummyFile;
-use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Files\FileList;
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Files\DummyFile;
 use PHP_CodeSniffer\Util\Cache;
 use PHP_CodeSniffer\Util\Common;
 use PHP_CodeSniffer\Util\Standards;
+use PHP_CodeSniffer\Exceptions\RuntimeException;
+use PHP_CodeSniffer\Exceptions\DeepExitException;
 
 class Runner
 {
@@ -230,10 +230,9 @@ class Runner
 
 
     /**
-     * Exits if the minimum requirements of PHP_CodeSniffer are not met.
+     * Exits if the minimum requirements of PHP_CodSniffer are not met.
      *
-     * @return void
-     * @throws \PHP_CodeSniffer\Exceptions\DeepExitException If the requirements are not met.
+     * @return array
      */
     public function checkRequirements()
     {
@@ -243,34 +242,8 @@ class Runner
             throw new DeepExitException($error, 3);
         }
 
-        $requiredExtensions = [
-            'tokenizer',
-            'xmlwriter',
-            'SimpleXML',
-        ];
-        $missingExtensions  = [];
-
-        foreach ($requiredExtensions as $extension) {
-            if (extension_loaded($extension) === false) {
-                $missingExtensions[] = $extension;
-            }
-        }
-
-        if (empty($missingExtensions) === false) {
-            $last      = array_pop($requiredExtensions);
-            $required  = implode(', ', $requiredExtensions);
-            $required .= ' and '.$last;
-
-            if (count($missingExtensions) === 1) {
-                $missing = $missingExtensions[0];
-            } else {
-                $last     = array_pop($missingExtensions);
-                $missing  = implode(', ', $missingExtensions);
-                $missing .= ' and '.$last;
-            }
-
-            $error = 'ERROR: PHP_CodeSniffer requires the %s extensions to be enabled. Please enable %s.'.PHP_EOL;
-            $error = sprintf($error, $required, $missing);
+        if (extension_loaded('tokenizer') === false) {
+            $error = 'ERROR: PHP_CodeSniffer requires the tokenizer extension to be enabled.'.PHP_EOL;
             throw new DeepExitException($error, 3);
         }
 
@@ -281,7 +254,6 @@ class Runner
      * Init the rulesets and other high-level settings.
      *
      * @return void
-     * @throws \PHP_CodeSniffer\Exceptions\DeepExitException If a referenced standard is not installed.
      */
     public function init()
     {
@@ -291,10 +263,7 @@ class Runner
 
         // Ensure this option is enabled or else line endings will not always
         // be detected properly for files created on a Mac with the /r line ending.
-        @ini_set('auto_detect_line_endings', true);
-
-        // Disable the PCRE JIT as this caused issues with parallel running.
-        ini_set('pcre.jit', false);
+        ini_set('auto_detect_line_endings', true);
 
         // Check that the standards are valid.
         foreach ($this->config->standards as $standard) {
@@ -311,7 +280,7 @@ class Runner
         }
 
         // Saves passing the Config object into other objects that only need
-        // the verbosity flag for debug output.
+        // the verbostity flag for deubg output.
         if (defined('PHP_CODESNIFFER_VERBOSITY') === false) {
             define('PHP_CODESNIFFER_VERBOSITY', $this->config->verbosity);
         }
@@ -343,8 +312,6 @@ class Runner
      * Performs the run.
      *
      * @return int The number of errors and warnings found.
-     * @throws \PHP_CodeSniffer\Exceptions\DeepExitException
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException
      */
     private function run()
     {
@@ -460,7 +427,10 @@ class Runner
                 if ($pid === -1) {
                     throw new RuntimeException('Failed to create child process');
                 } else if ($pid !== 0) {
-                    $childProcs[$pid] = $childOutFilename;
+                    $childProcs[] = [
+                        'pid' => $pid,
+                        'out' => $childOutFilename,
+                    ];
                 } else {
                     // Move forward to the start of the batch.
                     $todo->rewind();
@@ -484,7 +454,6 @@ class Runner
                         $file = $todo->current();
 
                         if ($file->ignored === true) {
-                            $todo->next();
                             continue;
                         }
 
@@ -533,14 +502,11 @@ class Runner
 
                     $output .= ";\n?".'>';
                     file_put_contents($childOutFilename, $output);
-                    exit();
+                    exit($pid);
                 }//end if
             }//end for
 
-            $success = $this->processChildProcs($childProcs);
-            if ($success === false) {
-                throw new RuntimeException('One or more child processes failed to run');
-            }
+            $this->processChildProcs($childProcs);
         }//end if
 
         restore_error_handler();
@@ -592,7 +558,6 @@ class Runner
      * @param int    $line    The line number the error was raised at.
      *
      * @return void
-     * @throws \PHP_CodeSniffer\Exceptions\RuntimeException
      */
     public function handleErrors($code, $message, $file, $line)
     {
@@ -612,7 +577,6 @@ class Runner
      * @param \PHP_CodeSniffer\Files\File $file The file to be processed.
      *
      * @return void
-     * @throws \PHP_CodeSniffer\Exceptions\DeepExitException
      */
     public function processFile($file)
     {
@@ -706,69 +670,55 @@ class Runner
      *
      * @param array $childProcs An array of child processes to wait for.
      *
-     * @return bool
+     * @return void
      */
     private function processChildProcs($childProcs)
     {
         $numProcessed = 0;
         $totalBatches = count($childProcs);
 
-        $success = true;
-
         while (count($childProcs) > 0) {
-            $pid = pcntl_waitpid(0, $status);
-            if ($pid <= 0) {
-                continue;
-            }
+            foreach ($childProcs as $key => $procData) {
+                $res = pcntl_waitpid($procData['pid'], $status, WNOHANG);
+                if ($res === $procData['pid']) {
+                    if (file_exists($procData['out']) === true) {
+                        include $procData['out'];
+                        if (isset($childOutput) === true) {
+                            $this->reporter->totalFiles    += $childOutput['totalFiles'];
+                            $this->reporter->totalErrors   += $childOutput['totalErrors'];
+                            $this->reporter->totalWarnings += $childOutput['totalWarnings'];
+                            $this->reporter->totalFixable  += $childOutput['totalFixable'];
+                            $this->reporter->totalFixed    += $childOutput['totalFixed'];
+                        }
 
-            $out = $childProcs[$pid];
-            unset($childProcs[$pid]);
-            if (file_exists($out) === false) {
-                continue;
-            }
+                        if (isset($debugOutput) === true) {
+                            echo $debugOutput;
+                        }
 
-            include $out;
-            unlink($out);
+                        if (isset($childCache) === true) {
+                            foreach ($childCache as $path => $cache) {
+                                Cache::set($path, $cache);
+                            }
+                        }
 
-            $numProcessed++;
+                        unlink($procData['out']);
+                        unset($childProcs[$key]);
 
-            if (isset($childOutput) === false) {
-                // The child process died, so the run has failed.
-                $file = new DummyFile('', $this->ruleset, $this->config);
-                $file->setErrorCounts(1, 0, 0, 0);
-                $this->printProgress($file, $totalBatches, $numProcessed);
-                $success = false;
-                continue;
-            }
+                        $numProcessed++;
 
-            $this->reporter->totalFiles    += $childOutput['totalFiles'];
-            $this->reporter->totalErrors   += $childOutput['totalErrors'];
-            $this->reporter->totalWarnings += $childOutput['totalWarnings'];
-            $this->reporter->totalFixable  += $childOutput['totalFixable'];
-            $this->reporter->totalFixed    += $childOutput['totalFixed'];
-
-            if (isset($debugOutput) === true) {
-                echo $debugOutput;
-            }
-
-            if (isset($childCache) === true) {
-                foreach ($childCache as $path => $cache) {
-                    Cache::set($path, $cache);
-                }
-            }
-
-            // Fake a processed file so we can print progress output for the batch.
-            $file = new DummyFile('', $this->ruleset, $this->config);
-            $file->setErrorCounts(
-                $childOutput['totalErrors'],
-                $childOutput['totalWarnings'],
-                $childOutput['totalFixable'],
-                $childOutput['totalFixed']
-            );
-            $this->printProgress($file, $totalBatches, $numProcessed);
+                        // Fake a processed file so we can print progress output for the batch.
+                        $file = new DummyFile(null, $this->ruleset, $this->config);
+                        $file->setErrorCounts(
+                            $childOutput['totalErrors'],
+                            $childOutput['totalWarnings'],
+                            $childOutput['totalFixable'],
+                            $childOutput['totalFixed']
+                        );
+                        $this->printProgress($file, $totalBatches, $numProcessed);
+                    }//end if
+                }//end if
+            }//end foreach
         }//end while
-
-        return $success;
 
     }//end processChildProcs()
 
@@ -776,14 +726,14 @@ class Runner
     /**
      * Print progress information for a single processed file.
      *
-     * @param \PHP_CodeSniffer\Files\File $file         The file that was processed.
-     * @param int                         $numFiles     The total number of files to process.
-     * @param int                         $numProcessed The number of files that have been processed,
-     *                                                  including this one.
+     * @param File $file         The file that was processed.
+     * @param int  $numFiles     The total number of files to process.
+     * @param int  $numProcessed The number of files that have been processed,
+     *                           including this one.
      *
      * @return void
      */
-    public function printProgress(File $file, $numFiles, $numProcessed)
+    public function printProgress($file, $numFiles, $numProcessed)
     {
         if (PHP_CODESNIFFER_VERBOSITY > 0
             || $this->config->showProgress === false
@@ -874,10 +824,7 @@ class Runner
 
         $percent = round(($numProcessed / $numFiles) * 100);
         $padding = (strlen($numFiles) - strlen($numProcessed));
-        if ($numProcessed === $numFiles
-            && $numFiles > $numPerLine
-            && ($numProcessed % $numPerLine) !== 0
-        ) {
+        if ($numProcessed === $numFiles && $numFiles > $numPerLine) {
             $padding += ($numPerLine - ($numFiles - (floor($numFiles / $numPerLine) * $numPerLine)));
         }
 

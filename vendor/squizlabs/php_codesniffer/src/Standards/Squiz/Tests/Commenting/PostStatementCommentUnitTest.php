@@ -33,19 +33,18 @@ class PostStatementCommentUnitTest extends AbstractSniffUnitTest
                 6  => 1,
                 10 => 1,
                 18 => 1,
-                35 => 1,
-                53 => 1,
             ];
-
-        case 'PostStatementCommentUnitTest.1.js':
+            break;
+        case 'PostStatementCommentUnitTest.js':
             return [
                 1 => 1,
                 4 => 1,
                 9 => 1,
             ];
-
+            break;
         default:
             return [];
+            break;
         }//end switch
 
     }//end getErrorList()
