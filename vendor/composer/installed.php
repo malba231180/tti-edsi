@@ -1,41 +1,42 @@
-<?php return array(
-    'root' => array(
-        'name' => 'malba231180/tti-edsi',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => '34d0f5e3aceb7f05dcef68e56ccb18b2c6ac1e04',
-        'type' => 'library',
-        'install_path' => __DIR__ . '/../../',
-        'aliases' => array(),
-        'dev' => true,
+<?php return array (
+  'root' => 
+  array (
+    'pretty_version' => 'dev-main',
+    'version' => 'dev-main',
+    'aliases' => 
+    array (
     ),
-    'versions' => array(
-        'malba231180/tti-edsi' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '34d0f5e3aceb7f05dcef68e56ccb18b2c6ac1e04',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../../',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
-        'squizlabs/php_codesniffer' => array(
-            'pretty_version' => '3.7.1',
-            'version' => '3.7.1.0',
-            'reference' => '1359e176e9307e906dc3d890bcc9603ff6d90619',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../squizlabs/php_codesniffer',
-            'aliases' => array(),
-            'dev_requirement' => true,
-        ),
-        'wp-coding-standards/wpcs' => array(
-            'pretty_version' => '1.2.1',
-            'version' => '1.2.1.0',
-            'reference' => 'f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c',
-            'type' => 'phpcodesniffer-standard',
-            'install_path' => __DIR__ . '/../wp-coding-standards/wpcs',
-            'aliases' => array(),
-            'dev_requirement' => true,
-        ),
+    'reference' => 'da565fa648043383be8b021a78c3d4a48985ea52',
+    'name' => 'malba231180/tti-edsi',
+  ),
+  'versions' => 
+  array (
+    'malba231180/tti-edsi' => 
+    array (
+      'pretty_version' => 'dev-main',
+      'version' => 'dev-main',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'da565fa648043383be8b021a78c3d4a48985ea52',
     ),
+    'squizlabs/php_codesniffer' => 
+    array (
+      'pretty_version' => '3.7.1',
+      'version' => '3.7.1.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '1359e176e9307e906dc3d890bcc9603ff6d90619',
+    ),
+    'wp-coding-standards/wpcs' => 
+    array (
+      'pretty_version' => '1.2.1',
+      'version' => '1.2.1.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c',
+    ),
+  ),
 );
