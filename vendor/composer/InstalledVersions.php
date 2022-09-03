@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'c78957d9ec49c6ad031538febbb7e6df39c7fb36',
+    'reference' => '07bb43130db5604908d15cfa7d10bfd7e87f5d72',
     'name' => 'malba231180/tti-edsi',
   ),
   'versions' => 
@@ -42,7 +42,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'c78957d9ec49c6ad031538febbb7e6df39c7fb36',
+      'reference' => '07bb43130db5604908d15cfa7d10bfd7e87f5d72',
     ),
     'squizlabs/php_codesniffer' => 
     array (
