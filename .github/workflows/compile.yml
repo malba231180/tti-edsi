@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12
-      - run: npm start
+      - run: npm -v
       - run: npm ci
       - run: npm test
 
