@@ -28,6 +28,7 @@ jobs:
           node-version: 12
       - run: npm config set registry http://registry.npmjs.org
       - run: npm install -g npm@latest
+      - run: npm whoami
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
