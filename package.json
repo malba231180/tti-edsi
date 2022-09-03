@@ -40,5 +40,8 @@
     "type": "git",
     "url": "https://github.com/malba231180/tti-edsi.git"
   },
-  "homepage": "https://github.com/malba231180/tti-edsi#readme"
+  "homepage": "https://github.com/malba231180/tti-edsi#readme",
+  "publishConfig": {
+   "@malba231180:registry": "https://npm.pkg.github.com"
+ }
 }
