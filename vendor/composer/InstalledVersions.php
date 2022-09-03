@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'e79b0363c1a73fe394bdb6796dae943e6c02a412',
+    'reference' => '29f767ad9b5e8766efcecc1f13709992a0b6b418',
     'name' => 'malba231180/tti-edsi',
   ),
   'versions' => 
@@ -42,16 +42,16 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'e79b0363c1a73fe394bdb6796dae943e6c02a412',
+      'reference' => '29f767ad9b5e8766efcecc1f13709992a0b6b418',
     ),
     'squizlabs/php_codesniffer' => 
     array (
-      'pretty_version' => '3.4.0',
-      'version' => '3.4.0.0',
+      'pretty_version' => '3.7.1',
+      'version' => '3.7.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '379deb987e26c7cd103a7b387aea178baec96e48',
+      'reference' => '1359e176e9307e906dc3d890bcc9603ff6d90619',
     ),
     'wp-coding-standards/wpcs' => 
     array (

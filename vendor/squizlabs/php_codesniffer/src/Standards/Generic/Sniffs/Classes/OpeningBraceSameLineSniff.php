@@ -9,8 +9,8 @@
 
 namespace PHP_CodeSniffer\Standards\Generic\Sniffs\Classes;
 
-use PHP_CodeSniffer\Sniffs\Sniff;
 use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Sniffs\Sniff;
 
 class OpeningBraceSameLineSniff implements Sniff
 {
@@ -27,6 +27,7 @@ class OpeningBraceSameLineSniff implements Sniff
             T_CLASS,
             T_INTERFACE,
             T_TRAIT,
+            T_ENUM,
         ];
 
     }//end register()
@@ -101,7 +102,7 @@ class OpeningBraceSameLineSniff implements Sniff
         } else if ($tokens[($openingBrace - 1)]['content'] === "\t") {
             $length = '\t';
         } else {
-            $length = strlen($tokens[($openingBrace - 1)]['content']);
+            $length = $tokens[($openingBrace - 1)]['length'];
         }
 
         if ($length !== 1) {

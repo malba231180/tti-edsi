@@ -11,10 +11,12 @@
 
 namespace PHP_CodeSniffer\Files;
 
+use PHP_CodeSniffer\Autoload;
 use PHP_CodeSniffer\Util;
 use PHP_CodeSniffer\Ruleset;
 use PHP_CodeSniffer\Config;
 use PHP_CodeSniffer\Exceptions\DeepExitException;
+use ReturnTypeWillChange;
 
 class FileList implements \Iterator, \Countable
 {
@@ -135,6 +137,7 @@ class FileList implements \Iterator, \Countable
      * Get the class name of the filter being used for the run.
      *
      * @return string
+     * @throws \PHP_CodeSniffer\Exceptions\DeepExitException If the specified filter could not be found.
      */
     private function getFilterClass()
     {
@@ -151,7 +154,7 @@ class FileList implements \Iterator, \Countable
                     throw new DeepExitException($error, 3);
                 }
 
-                $filterClass = \PHP_CodeSniffer\Autoload::loadFile($filename);
+                $filterClass = Autoload::loadFile($filename);
             } else {
                 $filterClass = '\PHP_CodeSniffer\Filters\\'.$filterType;
             }
@@ -167,6 +170,7 @@ class FileList implements \Iterator, \Countable
      *
      * @return void
      */
+    #[ReturnTypeWillChange]
     public function rewind()
     {
         reset($this->files);
@@ -179,10 +183,11 @@ class FileList implements \Iterator, \Countable
      *
      * @return \PHP_CodeSniffer\Files\File
      */
+    #[ReturnTypeWillChange]
     public function current()
     {
         $path = key($this->files);
-        if ($this->files[$path] === null) {
+        if (isset($this->files[$path]) === false) {
             $this->files[$path] = new LocalFile($path, $this->ruleset, $this->config);
         }
 
@@ -196,6 +201,7 @@ class FileList implements \Iterator, \Countable
      *
      * @return void
      */
+    #[ReturnTypeWillChange]
     public function key()
     {
         return key($this->files);
@@ -208,6 +214,7 @@ class FileList implements \Iterator, \Countable
      *
      * @return void
      */
+    #[ReturnTypeWillChange]
     public function next()
     {
         next($this->files);
@@ -220,6 +227,7 @@ class FileList implements \Iterator, \Countable
      *
      * @return boolean
      */
+    #[ReturnTypeWillChange]
     public function valid()
     {
         if (current($this->files) === false) {
@@ -236,6 +244,7 @@ class FileList implements \Iterator, \Countable
      *
      * @return integer
      */
+    #[ReturnTypeWillChange]
     public function count()
     {
         return $this->numFiles;
