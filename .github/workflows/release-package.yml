@@ -28,7 +28,6 @@ jobs:
           node-version: 12
       - run: npm config set registry https://registry.npmjs.org
       - run: npm install -g npm@latest
-      - run: npm login
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
