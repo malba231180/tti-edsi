@@ -28,8 +28,8 @@ jobs:
           node-version: 12
       - run: npm config set registry https://registry.npmjs.org
       - run: npm install -g npm@latest
-      - run: npm login --scope=@npmjs --registry=https://registry.npmjs.org
+      - run: npm login --scope=@npmedsi --registry=https://registry.npmjs.org
       - run: npm publish
-      - run: npm logout --scope=@malba231180
+      - run: npm logout --scope=@npmedsi
         env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
