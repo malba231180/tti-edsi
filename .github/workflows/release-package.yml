@@ -28,7 +28,7 @@ jobs:
           node-version: 12
       - run: npm config set registry http://registry.npmjs.org
       - run: npm install -g npm@latest
-      - run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+      - run: npm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
       - run: npm whoami
       - run: npm publish
         env:
