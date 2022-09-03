@@ -43,6 +43,6 @@
   },
   "homepage": "https://github.com/malba231180/tti-edsi#readme",
   "publishConfig": {
-    "@malba231180:registry": "https://registry.npmjs.org"
+    "@marcegmail:registry": "https://registry.npmjs.org"
   }
 }
