@@ -28,7 +28,7 @@ jobs:
           node-version: 12
       - run: npm config set registry https://registry.npmjs.org
       - run: npm install -g npm@latest
-      - run: npm login --scope=@malba231180 --registry=https://registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
+      - run: npm login --scope=@malba231180 '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
       - run: npm publish
       - run: npm logout --scope=@malba231180
         env:
