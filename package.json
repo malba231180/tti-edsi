@@ -2,7 +2,7 @@
   "name": "tti-edsi",
   "version": "1.6.14",
   "description": "CTS variation of the TTIBase theme",
-  "main": "ttiedsi.php",
+  "main": "tti-edsi.php",
   "scripts": {
     "start": "git config core.hooksPath hooks && chmod u+x ./hooks/pre-commit && composer install && npm install && grunt",
     "checkwp": "npm run configphpcs && npm run checkphp",
